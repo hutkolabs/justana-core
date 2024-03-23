@@ -13,6 +13,8 @@ contract IntentProcessor is IIntentProcessor {
     mapping(address => uint256) private solverPremiums;
     mapping(uint32 => address) public knownPermissions;
     uint32 public permissionCount = 0;
+    mapping(address => bytes32[]) private userIntents;
+    mapping(address => uint256) public userIntentCounts;
 
     constructor() {}
 
@@ -52,13 +54,16 @@ contract IntentProcessor is IIntentProcessor {
 
         require(
             intent.targetFields.length == intent.targetFieldsState.length,
-            "Target fields  and target fields state counts mismatch"
+            "Target fields and target fields state counts mismatch"
         );
 
         bytes32 intentId = keccak256(
             abi.encode(msg.sender, intent, block.number)
         );
         intents[intentId] = intent;
+        userIntents[msg.sender].push(intentId);
+        userIntentCounts[msg.sender]++;
+
         emit IntentPlaced(intentId, msg.sender);
         return intentId;
     }
@@ -103,6 +108,14 @@ contract IntentProcessor is IIntentProcessor {
 
     function getIntent(bytes32 intentId) external view returns (Intent memory) {
         return intents[intentId];
+    }
+
+    function getUserIntentByIndex(
+        address user,
+        uint256 index
+    ) external view returns (bytes32) {
+        require(index < userIntentCounts[user], "Index out of bounds");
+        return userIntents[user][index];
     }
 
     // Helper functions

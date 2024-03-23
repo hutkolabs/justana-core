@@ -38,7 +38,7 @@ contract SwapIntentValidator is IIntentValidator {
 
     modifier isCorrectType(IIntentProcessor.Intent calldata intent) {
         require(
-            keccak256(intent.intentType) == keccak256(bytes("UniswapV3Swap")),
+            keccak256(intent.intentType) == keccak256(bytes(INTENT_TYPE)),
             "SwapIntentValidator: Incorrect intent type"
         );
         _;
@@ -65,6 +65,8 @@ contract SwapIntentValidator is IIntentValidator {
                 operator == Operator.LessBy
             ) {
                 // Transfer from for input amount of token
+                // dev: the assets that may be used will be send to the contract directly which is insecure.
+                // TODO: improve approve - transferfrom logic, use proxies per user
                 IERC20(token).safeTransferFrom(
                     msg.sender,
                     address(this),

@@ -7,20 +7,10 @@ import "../utils/UniswapV3Utils.sol";
 import "../intent-parser/SwapIntentParser.sol";
 
 contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
-    // dev: [action] [amountIn] [assetFrom] [assetTo] [minOutputAmount] [receiver]
     string public constant FIELDS_TO_OPTIMISE = "amountOut,amountIn";
     bytes public constant INTENT_TYPE = "balance";
 
     constructor(ISwapRouter _swapRouter) UniswapV3Utils(_swapRouter) {}
-
-    // modifier validOptimizationFields(IIntentProcessor.Intent calldata intent) {
-    //     require(
-    //         keccak256(bytes(intent.fieldsToOptimize)) ==
-    //             keccak256(bytes(FIELDS_TO_OPTIMISE)),
-    //         "Invalid optimization fields"
-    //     );
-    //     _;
-    // }
 
     modifier validOperationType(IIntentProcessor.Intent calldata intent) {
         require(
