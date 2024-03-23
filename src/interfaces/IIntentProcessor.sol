@@ -45,7 +45,9 @@ interface IIntentProcessor {
      * @param intent The Intent struct containing details about the intent.
      * @return The unique identifier of the placed intent.
      */
-    function placeIntent(Intent calldata intent) external returns (bytes32);
+    function placeIntent(
+        Intent calldata intent
+    ) external payable returns (bytes32);
 
     /**
      * @dev Function to execute an intent by providing the solver's address and the payload.
@@ -62,13 +64,13 @@ interface IIntentProcessor {
     /**
      * @dev Function to preview an intent before execution, considering the solver and payload.
      * @param solver The address of the solver attempting to preview the intent.
-     * @param intent The Intent struct containing details about the intent to be previewed.
+     * @param intentId The unique identifier of the intent to be previewed.
      * @param payload The payload associated with the intent, encoded in bytes.
      * @return A boolean indicating whether the intent meets the validator's criteria for execution.
      */
     function previewIntent(
         address solver,
-        Intent calldata intent,
+        bytes32 intentId,
         bytes calldata payload
     ) external view returns (bool);
 }

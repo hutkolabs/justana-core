@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../interfaces/IIntentProcessor.sol";
-import "../interfaces/IValidator.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "../interfaces/IIntentValidator.sol";
+import "../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 contract IntentProcessor is IIntentProcessor {
     using Address for address payable;
@@ -26,7 +26,7 @@ contract IntentProcessor is IIntentProcessor {
         );
 
         bytes32 intentId = keccak256(
-            abi.encodePacked(msg.sender, intent, block.number)
+            abi.encode(msg.sender, intent, block.number)
         );
         intents[intentId] = intent;
 
@@ -44,7 +44,7 @@ contract IntentProcessor is IIntentProcessor {
         // dev: anyone can execute the intent as soon as it matches requirements
         // require(intent.validator == msg.sender, "Only validator can execute");
 
-        IValidator validator = IValidator(intent.validator);
+        IIntentValidator validator = IIntentValidator(intent.validator);
         // Use Validator to prevalidate (preview) the intent
         require(
             validator.preview(intent, solver, payload),
@@ -73,7 +73,11 @@ contract IntentProcessor is IIntentProcessor {
     ) external view override returns (bool) {
         Intent storage intent = intents[intentId];
         require(intent.expiration > block.number, "Intent expired");
-        IValidator validator = IValidator(intent.validator);
+        IIntentValidator validator = IIntentValidator(intent.validator);
         return validator.preview(intent, solver, payload);
+    }
+
+    function getIntent(bytes32 intentId) external view returns (Intent memory) {
+        return intents[intentId];
     }
 }

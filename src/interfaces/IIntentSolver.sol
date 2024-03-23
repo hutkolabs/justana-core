@@ -36,6 +36,7 @@ interface IIntentSolver {
      * @param intent The intent to be executed as proposed.
      */
     function executeSolution(
+        bytes32 intentId,
         IIntentProcessor.Intent calldata intent,
         bytes calldata payload
     ) external;
