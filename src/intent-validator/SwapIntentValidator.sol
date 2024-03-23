@@ -5,9 +5,12 @@ import "../interfaces/IIntentValidator.sol";
 import "../interfaces/IIntentProcessor.sol";
 import "../interfaces/IIntentSolver.sol";
 import "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../intent-parser/SwapIntentParser.sol";
 
 contract SwapIntentValidator is IIntentValidator {
+    using SafeERC20 for IERC20;
+
     modifier notExpired(IIntentProcessor.Intent calldata intent) {
         require(
             intent.expiration > block.number,
@@ -75,6 +78,13 @@ contract SwapIntentValidator is IIntentValidator {
                 payload,
                 (string, uint256, address, address, uint256, address)
             );
+
+        // Transfer from for input amount of assetFrom
+        IERC20(assetFrom).safeTransferFrom(msg.sender, address(this), amountIn);
+
+        // Approval for spent assetFrom
+        // TODO: use safe approval
+        IERC20(assetFrom).approve(solver, amountIn);
 
         // Check the balance of assetFrom and assetTo before the swap
         uint256 balanceFromBefore = IERC20(assetFrom).balanceOf(address(this));

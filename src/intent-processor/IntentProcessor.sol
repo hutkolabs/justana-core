@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IIntentProcessor.sol";
 import "../interfaces/IIntentValidator.sol";
+import "../interfaces/IIntentPermission.sol";
 import "../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 contract IntentProcessor is IIntentProcessor {
@@ -25,7 +26,6 @@ contract IntentProcessor is IIntentProcessor {
         permissionCount++;
     }
 
-    // Updated method to remove a permission from the known permissions
     function removePermission(uint32 permissionIndex) external {
         require(
             knownPermissions[permissionIndex] != address(0),
@@ -45,12 +45,15 @@ contract IntentProcessor is IIntentProcessor {
             msg.value == intent.premium,
             "Sent value must match the intent premium"
         );
+        require(
+            intent.permissions.length == intent.permissionsPayload.length,
+            "Permissions count and payload mismatch"
+        );
 
         bytes32 intentId = keccak256(
             abi.encode(msg.sender, intent, block.number)
         );
         intents[intentId] = intent;
-
         emit IntentPlaced(intentId, msg.sender);
         return intentId;
     }
@@ -62,18 +65,14 @@ contract IntentProcessor is IIntentProcessor {
     ) external override {
         Intent storage intent = intents[intentId];
         require(intent.expiration > block.number, "Intent expired");
-        // dev: anyone can execute the intent as soon as it matches requirements
-        // require(intent.validator == msg.sender, "Only validator can execute");
 
-        IIntentValidator validator = IIntentValidator(intent.validator);
-        // Use Validator to prevalidate (preview) the intent
-        require(
-            validator.preview(intent, solver, payload),
-            "Intent preview failed"
+        processPermissions(intent.permissions, intent.permissionsPayload, true);
+        validateAndExecuteIntent(intentId, intent, solver, payload);
+        processPermissions(
+            intent.permissions,
+            intent.permissionsPayload,
+            false
         );
-
-        // Assuming the validation logic is implemented in the Validator contract
-        validator.validate(intentId, intent, solver, payload); // This will revert if validation fails
 
         solverPremiums[solver] += intent.premium;
         emit IntentExecuted(solver, intentId);
@@ -82,7 +81,6 @@ contract IntentProcessor is IIntentProcessor {
     function withdrawPremium() external {
         uint256 premium = solverPremiums[msg.sender];
         require(premium > 0, "No premium to withdraw");
-
         solverPremiums[msg.sender] = 0;
         payable(msg.sender).sendValue(premium);
     }
@@ -100,5 +98,41 @@ contract IntentProcessor is IIntentProcessor {
 
     function getIntent(bytes32 intentId) external view returns (Intent memory) {
         return intents[intentId];
+    }
+
+    // Helper functions
+    function processPermissions(
+        uint32[] memory permissions,
+        bytes[] memory permissionsPayload,
+        bool isAdding
+    ) private {
+        for (uint32 i = 0; i < permissions.length; i++) {
+            address permissionContract = knownPermissions[permissions[i]];
+            if (permissionContract != address(0)) {
+                if (isAdding) {
+                    IIntentPermission(permissionContract).add(
+                        permissionsPayload[i]
+                    );
+                } else {
+                    IIntentPermission(permissionContract).remove(
+                        permissionsPayload[i]
+                    );
+                }
+            }
+        }
+    }
+
+    function validateAndExecuteIntent(
+        bytes32 intentId,
+        Intent storage intent,
+        address solver,
+        bytes calldata payload
+    ) private {
+        IIntentValidator validator = IIntentValidator(intent.validator);
+        require(
+            validator.preview(intent, solver, payload),
+            "Intent preview failed"
+        );
+        validator.validate(intentId, intent, solver, payload); // Reverts if validation fails
     }
 }

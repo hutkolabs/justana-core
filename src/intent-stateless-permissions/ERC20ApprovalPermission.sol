@@ -14,9 +14,9 @@ contract ERC20ApprovalPermission is IIntentPermission {
     }
 
     function remove(bytes calldata payload) external {
-        (address tokenAddress, address spender) = abi.decode(
+        (address tokenAddress, address spender, ) = abi.decode(
             payload,
-            (address, address)
+            (address, address, uint256)
         );
         IERC20(tokenAddress).approve(spender, 0);
     }
