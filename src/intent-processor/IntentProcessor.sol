@@ -10,8 +10,29 @@ contract IntentProcessor is IIntentProcessor {
 
     mapping(bytes32 => Intent) public intents;
     mapping(address => uint256) private solverPremiums;
+    mapping(uint32 => address) public knownPermissions;
+    uint32 public permissionCount = 0;
 
     constructor() {}
+
+    function addPermission(address permission) external {
+        uint32 permissionIndex = permissionCount + 1;
+        require(
+            knownPermissions[permissionIndex] == address(0),
+            "Permission slot occupied"
+        );
+        knownPermissions[permissionIndex] = permission;
+        permissionCount++;
+    }
+
+    // Updated method to remove a permission from the known permissions
+    function removePermission(uint32 permissionIndex) external {
+        require(
+            knownPermissions[permissionIndex] != address(0),
+            "Permission not known"
+        );
+        delete knownPermissions[permissionIndex];
+    }
 
     function placeIntent(
         Intent calldata intent
@@ -52,7 +73,7 @@ contract IntentProcessor is IIntentProcessor {
         );
 
         // Assuming the validation logic is implemented in the Validator contract
-        validator.validate(intent, solver, payload); // This will revert if validation fails
+        validator.validate(intentId, intent, solver, payload); // This will revert if validation fails
 
         solverPremiums[solver] += intent.premium;
         emit IntentExecuted(solver, intentId);

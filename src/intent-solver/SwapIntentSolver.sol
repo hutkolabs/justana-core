@@ -7,7 +7,7 @@ import "../utils/UniswapV3Utils.sol";
 import "../intent-parser/SwapIntentParser.sol";
 
 contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
-    // dev: [action] [amountIn] [asset] [for] [minOutputAmount]
+    // dev: [action] [amountIn] [assetFrom] [assetTo] [minOutputAmount] [receiver]
     string public constant FIELDS_TO_OPTIMISE = "amountOut,amountIn";
     bytes public constant ACTION = "UniswapV3Swap";
 
@@ -43,11 +43,12 @@ contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
     {
         // Use SwapIntentParser to parse intent.payload
         (
-            string memory action,
+            ,
             uint256 amountIn,
             address asset,
             address forAddress,
-            uint256 minOutputAmount
+            uint256 minOutputAmount,
+
         ) = SwapIntentParser.parseSwapIntent(payload);
 
         // Assuming poolAddress, tokenIn, tokenOut, and fee are known or derived from context
@@ -77,16 +78,18 @@ contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
         (
             ,
             uint256 amountIn,
-            address asset,
-            address forAddress,
-            uint256 minOutputAmount
+            address assetFrom,
+            address assetTo,
+            uint256 minOutputAmount,
+            address receiver
         ) = SwapIntentParser.parseSwapIntent(payload);
 
         // Execute the swap with the parsed parameters
         uint amountOut = UniswapV3Utils.swapExactInputSingle(
-            asset,
-            forAddress,
-            amountIn
+            assetFrom,
+            assetTo,
+            amountIn,
+            receiver
         );
 
         require(amountOut >= minOutputAmount, "Insufficient output amount");

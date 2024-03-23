@@ -10,6 +10,8 @@ interface IIntentProcessor {
      * @dev Struct to represent an intent within the system.
      * @param operationType The type of operation to be performed, encoded in bytes.
      * @param validator The address or ID of the validator for the intent.
+     * @param permissions
+     * @param permissionsPayload
      * @param fieldsToOptimize The specific fields targeted for optimization, encoded in bytes.
      * @param optimizationNote A string containing notes for optimization, typically in the format [field][operator][value].
      * @param payload The payload associated with the intent, encoded in bytes.
@@ -19,6 +21,8 @@ interface IIntentProcessor {
     struct Intent {
         bytes operationType;
         address validator;
+        uint32[] permissions;
+        bytes[] permissionsPayload;
         string fieldsToOptimize;
         string optimizationNote;
         bytes payload;

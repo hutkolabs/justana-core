@@ -12,12 +12,14 @@ library SwapIntentParser {
             uint256 amountIn,
             address asset,
             address forAddress,
-            uint256 minOutputAmount
+            uint256 minOutputAmount,
+            address receiver
         )
     {
-        (action, amountIn, asset, forAddress, minOutputAmount) = abi.decode(
-            data,
-            (string, uint256, address, address, uint256)
-        );
+        (action, amountIn, asset, forAddress, minOutputAmount, receiver) = abi
+            .decode(
+                data,
+                (string, uint256, address, address, uint256, address)
+            );
     }
 }

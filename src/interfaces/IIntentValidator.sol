@@ -25,6 +25,7 @@ interface IIntentValidator {
      * @param payload The payload associated with the intent.
      */
     function validate(
+        bytes32 intentId,
         IIntentProcessor.Intent calldata intent,
         address solver,
         bytes calldata payload
