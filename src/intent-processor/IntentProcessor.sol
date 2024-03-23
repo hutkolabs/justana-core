@@ -50,6 +50,11 @@ contract IntentProcessor is IIntentProcessor {
             "Permissions count and payload mismatch"
         );
 
+        require(
+            intent.targetFields.length == intent.targetFieldsState.length,
+            "Target fields  and target fields state counts mismatch"
+        );
+
         bytes32 intentId = keccak256(
             abi.encode(msg.sender, intent, block.number)
         );
@@ -109,15 +114,18 @@ contract IntentProcessor is IIntentProcessor {
         for (uint32 i = 0; i < permissions.length; i++) {
             address permissionContract = knownPermissions[permissions[i]];
             if (permissionContract != address(0)) {
-                if (isAdding) {
-                    IIntentPermission(permissionContract).add(
+                bytes memory data = isAdding
+                    ? abi.encodeWithSelector(
+                        IIntentPermission.add.selector,
+                        permissionsPayload[i]
+                    )
+                    : abi.encodeWithSelector(
+                        IIntentPermission.remove.selector,
                         permissionsPayload[i]
                     );
-                } else {
-                    IIntentPermission(permissionContract).remove(
-                        permissionsPayload[i]
-                    );
-                }
+
+                (bool success, ) = permissionContract.delegatecall(data);
+                require(success, "Permission processing failed");
             }
         }
     }

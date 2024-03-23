@@ -19,13 +19,14 @@ interface IIntentProcessor {
      * @param expiration The expiration block height of the intent.
      */
     struct Intent {
-        bytes operationType;
+        bytes intentType;
+        address owner;
         address validator;
         uint32[] permissions;
         bytes[] permissionsPayload;
-        string fieldsToOptimize;
-        string optimizationNote;
-        bytes payload;
+        bytes[] targetFields;
+        bytes[] targetFieldsState;
+        // bytes payload;
         uint256 premium;
         uint256 expiration;
     }

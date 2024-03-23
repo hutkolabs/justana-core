@@ -9,22 +9,23 @@ import "../intent-parser/SwapIntentParser.sol";
 contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
     // dev: [action] [amountIn] [assetFrom] [assetTo] [minOutputAmount] [receiver]
     string public constant FIELDS_TO_OPTIMISE = "amountOut,amountIn";
-    bytes public constant ACTION = "UniswapV3Swap";
+    bytes public constant INTENT_TYPE = "balance";
 
     constructor(ISwapRouter _swapRouter) UniswapV3Utils(_swapRouter) {}
 
-    modifier validOptimizationFields(IIntentProcessor.Intent calldata intent) {
-        require(
-            keccak256(bytes(intent.fieldsToOptimize)) ==
-                keccak256(bytes(FIELDS_TO_OPTIMISE)),
-            "Invalid optimization fields"
-        );
-        _;
-    }
+    // modifier validOptimizationFields(IIntentProcessor.Intent calldata intent) {
+    //     require(
+    //         keccak256(bytes(intent.fieldsToOptimize)) ==
+    //             keccak256(bytes(FIELDS_TO_OPTIMISE)),
+    //         "Invalid optimization fields"
+    //     );
+    //     _;
+    // }
 
     modifier validOperationType(IIntentProcessor.Intent calldata intent) {
         require(
-            keccak256(bytes(intent.operationType)) == keccak256(bytes(ACTION)),
+            keccak256(bytes(intent.intentType)) ==
+                keccak256(bytes(INTENT_TYPE)),
             "Invalid optimization fields"
         );
 
@@ -38,8 +39,10 @@ contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
         external
         view
         override
-        validOptimizationFields(intent)
-        returns (bytes memory)
+        returns (
+            // validOptimizationFields(intent)
+            bytes memory
+        )
     {
         // Use SwapIntentParser to parse intent.payload
         (
@@ -72,7 +75,7 @@ contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
         external
         override
         validOperationType(intent)
-        validOptimizationFields(intent)
+    // validOptimizationFields(intent)
     {
         // Use SwapIntentParser to parse intent.payload
         (
