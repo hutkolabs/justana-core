@@ -44,7 +44,8 @@ contract IntentProcessor is IIntentProcessor {
     ) external override {
         Intent storage intent = intents[intentId];
         require(intent.expiration > block.number, "Intent expired");
-        require(intent.validator == msg.sender, "Only validator can execute");
+        // dev: anyone can execute the intent aas soon as it matches requirements
+        // require(intent.validator == msg.sender, "Only validator can execute");
 
         // Use Validator to prevalidate (preview) the intent
         require(
