@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./IIntentProcessor.sol";
 
-interface IValidator {
+interface IIntentValidator {
     /**
      * @dev Preview the intent to check if it meets certain criteria.
      * @param intent The intent to be checked.

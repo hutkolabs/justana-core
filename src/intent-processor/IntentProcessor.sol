@@ -10,11 +10,8 @@ contract IntentProcessor is IIntentProcessor {
 
     mapping(bytes32 => Intent) public intents;
     mapping(address => uint256) private solverPremiums;
-    IValidator public validator;
 
-    constructor(IValidator _validator) {
-        validator = _validator;
-    }
+    constructor() {}
 
     function placeIntent(
         Intent calldata intent
@@ -44,9 +41,10 @@ contract IntentProcessor is IIntentProcessor {
     ) external override {
         Intent storage intent = intents[intentId];
         require(intent.expiration > block.number, "Intent expired");
-        // dev: anyone can execute the intent aas soon as it matches requirements
+        // dev: anyone can execute the intent as soon as it matches requirements
         // require(intent.validator == msg.sender, "Only validator can execute");
 
+        IValidator validator = IValidator(intent.validator);
         // Use Validator to prevalidate (preview) the intent
         require(
             validator.preview(intent, solver, payload),
@@ -66,5 +64,16 @@ contract IntentProcessor is IIntentProcessor {
 
         solverPremiums[msg.sender] = 0;
         payable(msg.sender).sendValue(premium);
+    }
+
+    function previewIntent(
+        address solver,
+        bytes32 intentId,
+        bytes calldata payload
+    ) external view override returns (bool) {
+        Intent storage intent = intents[intentId];
+        require(intent.expiration > block.number, "Intent expired");
+        IValidator validator = IValidator(intent.validator);
+        return validator.preview(intent, solver, payload);
     }
 }

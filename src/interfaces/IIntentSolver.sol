@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./IIntentProcessor.sol";
 
-interface ISolver {
+interface IIntentSolver {
     /**
      * @dev Emitted when a solution preview is requested.
      * @param intentId The unique identifier of the intent being previewed.
