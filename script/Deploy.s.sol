@@ -7,8 +7,9 @@ import "../src/intent-solver/SwapIntentSolver.sol";
 import "../src/intent-validator/SwapIntentValidator.sol";
 import "../src/intent-processor/IntentProcessor.sol";
 import "../src/interfaces/ISwapRouter.sol";
+import "../src/utils/SwapIntentHelper.sol";
 
-contract MyScript is Script {
+contract MainScript is Script {
     ERC20ApprovalPermission internal erc20ApprovalPermission;
     SwapIntentSolver internal swapIntentSolver;
     SwapIntentValidator internal swapIntentValidator;
@@ -22,10 +23,23 @@ contract MyScript is Script {
 
         erc20ApprovalPermission = new ERC20ApprovalPermission();
         swapIntentSolver = new SwapIntentSolver(uniswapRouter);
-        swapIntentValidator = new SwapIntentValidator();
         intentProcessor = new IntentProcessor();
+        swapIntentValidator = new SwapIntentValidator(intentProcessor);
 
         intentProcessor.addPermission(address(erc20ApprovalPermission));
+
+        vm.stopBroadcast();
+    }
+}
+
+contract HelperScript is Script {
+    SwapIntentHelper internal swapIntentHelper;
+
+    function run() external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        swapIntentHelper = new SwapIntentHelper();
 
         vm.stopBroadcast();
     }

@@ -84,6 +84,15 @@ contract IntentProcessor is IIntentProcessor {
             false
         );
 
+        if (keccak256(intent.prompt) != keccak256("")) {
+            solverPremiums[solver] += intent.premium;
+            emit IntentExecuted(solver, intentId);
+        }
+    }
+
+    function payDelayedPremium(bytes32 intentId, address solver) external {
+        // TODO: prevent double spent/usage twice; ensure it's called from validator only
+        Intent storage intent = intents[intentId];
         solverPremiums[solver] += intent.premium;
         emit IntentExecuted(solver, intentId);
     }

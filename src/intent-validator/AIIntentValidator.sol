@@ -12,26 +12,42 @@ import "../intent-parser/SwapIntentParser.sol";
 contract AIIntentValidator {
     uint64 private constant AIORACLE_CALLBACK_GAS_LIMIT = 5000000;
     uint64 private constant DEFAULT_FEE = 0.03 ether;
+    IIntentProcessor public intentProcessor;
     IAIOracle private constant aiOracle =
         IAIOracle(0x0A0f4321214BB6C7811dD8a71cF587bdaF03f0A0);
-    bytes private constant prompt =
-        "Lool at the state transition and tell true or false only if it mets the following condition.";
+    // bytes private constant prompt =
+    //     "Lool at the state transition and say one word: true or false in response if it mets the following condition.";
+
+    constructor(IIntentProcessor ip) {
+        intentProcessor = ip;
+    }
 
     function useSecondAIFactor(
+        bytes32 intentId,
+        address solver,
         IIntentProcessor.Intent calldata intent
     ) internal {
         aiOracle.requestCallback{value: DEFAULT_FEE}(
             11,
-            prompt,
+            intent.prompt,
             address(this),
             AIORACLE_CALLBACK_GAS_LIMIT,
-            bytes("")
+            abi.encode(intentId, solver)
         );
     }
 
-    // function aiOracleCallback(
-    //     uint256 requestId,
-    //     bytes calldata output,
-    //     bytes calldata callbackData
-    // ) external virtual;
+    function aiOracleCallback(
+        uint256 requestId,
+        bytes calldata output,
+        bytes calldata callbackData
+    ) external {
+        require(
+            keccak256(output) == keccak256("true"),
+            "AIOracle: Output not true"
+        );
+        bytes32 intentId;
+        address solver;
+        (intentId, solver) = abi.decode(callbackData, (bytes32, address));
+        intentProcessor.payDelayedPremium(intentId, solver);
+    }
 }

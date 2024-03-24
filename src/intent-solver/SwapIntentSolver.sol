@@ -36,7 +36,6 @@ contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
     {
         // Use SwapIntentParser to parse intent.payload
         (
-            ,
             uint256 amountIn,
             address asset,
             address forAddress,
@@ -69,7 +68,6 @@ contract SwapIntentSolver is IIntentSolver, UniswapV3Utils {
     {
         // Use SwapIntentParser to parse intent.payload
         (
-            ,
             uint256 amountIn,
             address assetFrom,
             address assetTo,

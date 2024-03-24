@@ -19,6 +19,7 @@ interface IIntentProcessor {
      * @param expiration The expiration block height of the intent.
      */
     struct Intent {
+        bytes prompt;
         bytes intentType;
         address owner;
         address validator;
@@ -26,7 +27,6 @@ interface IIntentProcessor {
         bytes[] permissionsPayload;
         bytes[] targetFields;
         bytes[] targetFieldsState;
-        // bytes payload;
         uint256 premium;
         uint256 expiration;
     }
@@ -65,6 +65,8 @@ interface IIntentProcessor {
         bytes32 intentId,
         bytes calldata payload
     ) external;
+
+    function payDelayedPremium(bytes32 intentId, address solver) external;
 
     /**
      * @dev Function to preview an intent before execution, considering the solver and payload.

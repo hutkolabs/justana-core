@@ -8,18 +8,16 @@ library SwapIntentParser {
         public
         pure
         returns (
-            string memory action,
             uint256 amountIn,
-            address asset,
-            address forAddress,
-            uint256 minOutputAmount,
+            address assetIn,
+            address assetTo,
+            uint256 minAmountOut,
             address receiver
         )
     {
-        (action, amountIn, asset, forAddress, minOutputAmount, receiver) = abi
-            .decode(
-                data,
-                (string, uint256, address, address, uint256, address)
-            );
+        (amountIn, assetIn, assetTo, minAmountOut, receiver) = abi.decode(
+            data,
+            (uint256, address, address, uint256, address)
+        );
     }
 }

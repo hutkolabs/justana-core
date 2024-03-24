@@ -7,8 +7,9 @@ import "../interfaces/IIntentSolver.sol";
 import "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../intent-parser/SwapIntentParser.sol";
+import "./AIIntentValidator.sol";
 
-contract SwapIntentValidator is IIntentValidator {
+contract SwapIntentValidator is IIntentValidator, AIIntentValidator {
     using SafeERC20 for IERC20;
     bytes public constant INTENT_TYPE = "balance";
 
@@ -43,6 +44,8 @@ contract SwapIntentValidator is IIntentValidator {
         );
         _;
     }
+
+    constructor(IIntentProcessor ip) AIIntentValidator(ip) {}
 
     function parseTargetStateData(
         IIntentProcessor.Intent calldata intent,
